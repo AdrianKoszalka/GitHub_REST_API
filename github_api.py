@@ -30,8 +30,9 @@ class Github_pulls():
     
     token = os.getenv('GIT_TOKEN')
     auth = False
-    pulls = []
+    pulls_list = []
 
+    # This function checks if our env variable is set. 
     def authorization(self):
         
         print('\nAUTHORIZATION PROCESS')
@@ -41,38 +42,40 @@ class Github_pulls():
             print('* Authorization passed successfully.\n')
             self.auth = True 
 
+    # The fuction below get pull requests data from given repo and for given state. 
     def get_repo(self, state):
 
         print('\nProcessing (...)')
 
-        owner = "contiamo"
-        repo = "restful-react"
+        github_user = "contiamo"
+        repository_name = "restful-react"
 
         if self.auth==True: 
-            g = Github(self.token, per_page=100)
+            github_instance = Github(self.token, per_page=100)
         else:
-            g = Github(per_page=100)
+            github_instance = Github(per_page=100)
         
-        res = g.get_repo('{}/{}'.format(owner, repo))
-        pulls = res.get_pulls(state=state)
+        git_repository = github_instance.get_repo('{}/{}'.format(github_user, repository_name))
+        pulls = git_repository.get_pulls(state=state)
 
         for pull in pulls:
-            self.pulls.append(pull.raw_data)
+            self.pulls_list.append(pull.raw_data)
 
-
+    # In this function our result is saved as JSON file. File name is set as a timestamp. 
     def pulls_to_json(self):
 
         now = datetime.now()
         date_label = now.strftime("%Y-%m-%d_%H-%M-%S")
 
         with open(os.path.abspath('output_json/{}.json'.format(date_label)), 'w', encoding='utf-8') as f:
-            json.dump(self.pulls, f, ensure_ascii=False, indent=4)
+            json.dump(self.pulls_list, f, ensure_ascii=False, indent=4)
 
-        pulls_qty = len(self.pulls)
+        pulls_quantity = len(self.pulls_list)
 
-        print('\nYou got a data from {} Pull Requests.'.format(pulls_qty))
+        print('\nYou got a data from {} Pull Requests.'.format(pulls_quantity))
         print('File "{}.json" successfully saved.\n'.format(date_label))
 
+    # This fuction runs all previous fuctions in correct order. 
     def run(self):
 
         self.authorization()
